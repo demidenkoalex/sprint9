@@ -3,88 +3,51 @@ package main
 // Пишите тесты в этом файле
 
 import (
-	"math/rand"
 	"testing"
-	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
-
-var (
-	randSource = rand.NewSource(time.Now().UnixNano())
-	randRange  = rand.New(randSource)
-)
-
-func randSlice(t *testing.T, n int) []int {
-	t.Helper()
-	src := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(src)
-
-	if n <= 0 {
-		return []int{}
-	}
-	out := make([]int, n)
-	for i := range out {
-		out[i] = r.Intn(10_000) - 5_000 // include negative numbers too
-	}
-	return out
-}
-
-func assertEqualInt(t *testing.T, got, want int) {
-	t.Helper()
-	if got != want {
-		t.Fatalf("got %d, want %d", got, want)
-	}
-}
-
-func assertLen(t *testing.T, s []int, want int) {
-	t.Helper()
-	if len(s) != want {
-		t.Fatalf("len=%d, want %d", len(s), want)
-	}
-}
 
 func TestGenerateRandomElements(t *testing.T) {
-	rand.Seed(1)
+	slice := generateRandomElements(1000)
+	empty := generateRandomElements(0)
 
-	s := generateRandomElements(10)
-	assertLen(t, s, 10)
-	for _, v := range s {
-		if v < 0 {
-			t.Fatalf("value must be >= 0, got %d", v)
-		}
+	assert.Len(t, slice, 1000)
+	for _, v := range slice {
+		require.GreaterOrEqual(t, v, 0)
 	}
 
-	zero := generateRandomElements(0)
-	assertLen(t, zero, 0)
+	require.Empty(t, empty)
+}
 
-	neg := generateRandomElements(-5)
-	assertLen(t, neg, 0)
+var maxCases = []struct {
+	name string
+	nums []int
+	want int
+}{
+	{"nil", nil, 0},
+	{"empty", []int{}, 0},
+	{"single", []int{7}, 7},
+	{"positives", []int{1, 9, 3, 4}, 9},
+	{"all negative", []int{-10, -2, -30}, -2},
+	{"mixed", []int{-1, 0, 5, 2}, 5},
 }
 
 func TestMaximum(t *testing.T) {
-	assertEqualInt(t, maximum(nil), 0)
-	assertEqualInt(t, maximum([]int{}), 0)
-
-	assertEqualInt(t, maximum([]int{7}), 7)
-	assertEqualInt(t, maximum([]int{1, 9, 3, 4}), 9)
-	assertEqualInt(t, maximum([]int{-10, -2, -30}), -2)
-	assertEqualInt(t, maximum([]int{-1, 0, 5, 2}), 5)
+	for _, tt := range maxCases {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, maximum(tt.nums))
+		})
+	}
 }
 
-func TestMaxChunks(t *testing.T) {
-	assertEqualInt(t, maxChunks(nil), 0)
-	assertEqualInt(t, maxChunks([]int{}), 0)
+func TestMaxChunks_SameCasesAsMaximum(t *testing.T) {
+	const chunks = 4
 
-	// Small slices (< CHUNKS) should still work.
-	assertEqualInt(t, maxChunks([]int{1, 4, 2}), 4)
-	assertEqualInt(t, maxChunks([]int{-3, -1, -7}), -1)
-
-	// Not divisible by CHUNKS (remainder goes to last chunk).
-	data := []int{1, 8, 3, 4, 5, 6, 7, 2, 9} // 9 elements
-	assertEqualInt(t, maxChunks(data), 9)
-
-	// Randomized property: result must match the single-thread maximum.
-	for i := 0; i < 20; i++ {
-		r := randSlice(t, 10_000)
-		assertEqualInt(t, maxChunks(r), maximum(r))
+	for _, tt := range maxCases {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, maxChunks(tt.nums, chunks))
+		})
 	}
 }

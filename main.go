@@ -19,9 +19,9 @@ func generateRandomElements(size int) []int {
 	}
 
 	data := make([]int, size)
-	src := rand.NewSource(time.Now().Unix())
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for i := range data {
-		data[i] = int(src.Int63())
+		data[i] = r.Int()
 	}
 	return data
 }
@@ -41,26 +41,28 @@ func maximum(nums []int) int {
 	return max
 }
 
-// // maxChunks returns the maximum number of elements in a chunks.
-func maxChunks(nums []int) int {
-	if len(nums) == 0 {
+// maxChunks returns the maximum number of elements in a chunks.
+func maxChunks(nums []int, chunks int) int {
+	if len(nums) <= 0 {
 		return 0
 	}
+	if chunks > len(nums) {
+		chunks = len(nums)
+	}
 
-	// Compute minInt without importing extra packages.
 	maxInt := int(^uint(0) >> 1)
 	minInt := -maxInt - 1
 
-	chunkSize := len(nums) / CHUNKS
-	maxima := make([]int, CHUNKS)
+	chunkSize := len(nums) / chunks
+	maxima := make([]int, chunks)
 
 	var wg sync.WaitGroup
-	wg.Add(CHUNKS)
+	wg.Add(chunks)
 
-	for i := 0; i < CHUNKS; i++ {
+	for i := 0; i < chunks; i++ {
 		start := i * chunkSize
 		end := start + chunkSize
-		if i == CHUNKS-1 {
+		if i == chunks-1 {
 			end = len(nums)
 		}
 		sub := nums[start:end]
@@ -88,7 +90,7 @@ func main() {
 	elapsedSingle := time.Since(start).Microseconds()
 
 	start = time.Now()
-	maxValueChunks := maxChunks(numbers)
+	maxValueChunks := maxChunks(numbers, CHUNKS)
 	elapsedChunks := time.Since(start).Microseconds()
 
 	fmt.Printf("SIZE=%d\n", SIZE)
