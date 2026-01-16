@@ -15,12 +15,13 @@ const (
 // generateRandomElements generates random elements.
 func generateRandomElements(size int) []int {
 	if size <= 0 {
-		return []int{}
+		return nil
 	}
 
 	data := make([]int, size)
+	src := rand.NewSource(time.Now().Unix())
 	for i := range data {
-		data[i] = rand.Intn(SIZE)
+		data[i] = int(src.Int63())
 	}
 	return data
 }
@@ -79,28 +80,8 @@ func maxChunks(nums []int) int {
 }
 
 func main() {
-	// fmt.Printf("Генерируем %d целых чисел", SIZE)
-	// // ваш код здесь
-
-	// fmt.Println("Ищем максимальное значение в один поток")
-	// // ваш код здесь
-
-	// fmt.Printf("Максимальное значение элемента: %d\nВремя поиска: %d ms\n", max, elapsed)
-
-	// fmt.Printf("Ищем максимальное значение в %d потоков", CHUNKS)
-	// // ваш код здесь
-
-	// fmt.Printf("Максимальное значение элемента: %d\nВремя поиска: %d ms\n", max, elapsed)
 
 	numbers := generateRandomElements(SIZE)
-
-	if len(numbers) == 0 {
-		// maximum/maxChunks по контракту вернут 0, но времени “поиска” почти не будет.
-		fmt.Printf("Slice is empty (SIZE=%d)\n", SIZE)
-		fmt.Printf("maximum(): max=%d, time=%d µs\n", maximum(numbers), int64(0))
-		fmt.Printf("maxChunks(): max=%d, time=%d µs\n", maxChunks(numbers), int64(0))
-		return
-	}
 
 	start := time.Now()
 	maxValueSingle := maximum(numbers)

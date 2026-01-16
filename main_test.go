@@ -51,9 +51,6 @@ func TestGenerateRandomElements(t *testing.T) {
 		if v < 0 {
 			t.Fatalf("value must be >= 0, got %d", v)
 		}
-		if v >= SIZE {
-			t.Fatalf("value must be < %d, got %d", SIZE, v)
-		}
 	}
 
 	zero := generateRandomElements(0)
